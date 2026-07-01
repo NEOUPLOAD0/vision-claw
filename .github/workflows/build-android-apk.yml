@@ -54,9 +54,12 @@ jobs:
 
       - name: Generate Android native project
         working-directory: artifacts/mobile
-        run: npx expo prebuild --platform android --clean
+        run: npx expo prebuild --platform android --clean --no-install
         env:
           EXPO_NO_DOTENV: 1
+
+      - name: Install dependencies after prebuild
+        run: pnpm install --no-frozen-lockfile
 
       - name: Make gradlew executable
         working-directory: artifacts/mobile/android
