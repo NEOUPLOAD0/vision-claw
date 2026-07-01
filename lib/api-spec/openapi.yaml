@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: vision
+    description: Vision and AI analysis
 paths:
   /healthz:
     get:
@@ -24,6 +26,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /vision/analyze:
+    post:
+      operationId: analyzeVision
+      tags: [vision]
+      summary: Analyze image and audio with Gemini
+      description: Accepts base64-encoded image and optional audio, returns AI analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VisionAnalyzeBody"
+      responses:
+        "200":
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VisionAnalyzeResponse"
+        "500":
+          description: Analysis error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +60,38 @@ components:
           type: string
       required:
         - status
-
+    VisionAnalyzeBody:
+      type: object
+      properties:
+        imageBase64:
+          type: string
+          description: Base64-encoded JPEG image from the camera
+        imageMimeType:
+          type: string
+          description: MIME type of the image (default image/jpeg)
+        audioBase64:
+          type: string
+          description: Base64-encoded audio recording (optional)
+        audioMimeType:
+          type: string
+          description: MIME type of the audio (e.g. audio/mp4, audio/webm)
+        textPrompt:
+          type: string
+          description: Optional text prompt to include
+      required:
+        - imageBase64
+    VisionAnalyzeResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          description: AI-generated analysis text
+      required:
+        - response
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

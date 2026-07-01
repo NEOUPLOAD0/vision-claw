@@ -1,45 +1,43 @@
-# [Project name]
+# Vision Claw
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A real-time AI vision assistant for Android. Point your phone camera at anything, hold the mic button to ask a question, and Gemini analyzes what it sees and hears — then speaks the answer back to you.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm --filter @workspace/mobile run dev` — run the Expo dev server (scan QR with Expo Go)
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Mobile: Expo SDK 54 (React Native 0.81), Expo Router, expo-camera, expo-av, expo-speech, expo-file-system
+- API: Express 5 with 50 MB body limit (for base64 image/audio payloads)
+- AI: Google Gemini `gemini-2.5-flash` via `@google/genai` SDK (user's own API key)
+- Validation: Zod + Orval codegen from OpenAPI spec
 
-## Where things live
+## Where Things Live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/mobile/app/index.tsx` — main camera + voice screen
+- `artifacts/mobile/constants/colors.ts` — dark cyber color palette
+- `artifacts/api-server/src/routes/vision.ts` — Gemini vision analysis endpoint
+- `lib/api-spec/openapi.yaml` — API contract (source of truth)
+- `lib/api-client-react/src/generated/` — generated hooks (do not edit)
 
-## Architecture decisions
+## Architecture Decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Gemini API key (`GEMINI_API_KEY`) lives exclusively in the backend — never exposed to the mobile client.
+- Base64 image + audio are POSTed as JSON to `/api/vision/analyze`; Express body limit is 50 MB.
+- `expo-av` is used for audio recording (SDK 54 deprecated it but it still works for recording).
+- Single-screen app — no tab bar, no header chrome. Camera fills the screen.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- User wants to run the app on their Android phone using Expo Go / Termux.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- After any API spec change, run `pnpm --filter @workspace/api-spec run codegen` before editing frontend code.
+- `FileSystem.EncodingType.Base64` type is missing from some expo-file-system versions — use `'base64' as FileSystem.EncodingType` as a workaround.
+- `expo-speech` package installation can corrupt (`_tmp_NNN` dir) — if it does, `rm -rf node_modules/.pnpm/expo-speech*` then reinstall.

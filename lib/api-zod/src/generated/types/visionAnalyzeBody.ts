@@ -5,9 +5,6 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
-export interface HealthStatus {
-  status: string;
-}
 
 export interface VisionAnalyzeBody {
   /** Base64-encoded JPEG image from the camera */
@@ -21,13 +18,3 @@ export interface VisionAnalyzeBody {
   /** Optional text prompt to include */
   textPrompt?: string;
 }
-
-export interface VisionAnalyzeResponse {
-  /** AI-generated analysis text */
-  response: string;
-}
-
-export interface ErrorResponse {
-  error: string;
-}
-
