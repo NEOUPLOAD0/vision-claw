@@ -1,0 +1,56 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch: # also lets you trigger it manually from the GitHub UI
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Android native project
+        working-directory: artifacts/mobile
+        run: npx expo prebuild --platform android --clean --no-install
+        env:
+          EXPO_NO_DOTENV: 1
+
+      - name: Make gradlew executable
+        working-directory: artifacts/mobile/android
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        working-directory: artifacts/mobile/android
+        run: ./gradlew assembleDebug --no-daemon
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: VisionClaw-debug
+          path: artifacts/mobile/android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
