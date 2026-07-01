@@ -50,7 +50,7 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Generate Android native project
         working-directory: artifacts/mobile
